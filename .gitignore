@@ -4,4 +4,4 @@ build/
 .env
 *.db
 .DS_Store
-uploads/
+/backend/uploads/
