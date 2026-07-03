@@ -105,16 +105,46 @@ class _ProfileTabState extends State<ProfileTab> {
     }
   }
 
+  // Vérification d'identité : recto + verso de la CNI ou du permis de conduire
   Future<void> _submitKyc() async {
+    final docType = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Quel document utilisez-vous ?',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 4),
+            ListTile(
+              leading: const Icon(Icons.badge_outlined),
+              title: const Text('Carte nationale d’identité'),
+              onTap: () => Navigator.pop(ctx, 'cni'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.directions_car_outlined),
+              title: const Text('Permis de conduire'),
+              onTap: () => Navigator.pop(ctx, 'permis'),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (docType == null) return;
+    final label = docType == 'cni' ? 'votre carte d’identité' : 'votre permis de conduire';
     try {
-      final cniUrl = await _pickAndUpload('Photo de votre pièce d’identité (CNI ou passeport)');
-      if (cniUrl == null) return;
-      final selfieUrl = await _pickAndUpload('Maintenant, un selfie bien éclairé');
-      if (selfieUrl == null) return;
+      final rectoUrl = await _pickAndUpload('Photo du RECTO de $label');
+      if (rectoUrl == null) return;
+      final versoUrl = await _pickAndUpload('Maintenant, photo du VERSO de $label');
+      if (versoUrl == null) return;
       await Api.post('/users/me/kyc', body: {
         'documents': [
-          {'type': 'cni', 'fileUrl': cniUrl},
-          {'type': 'selfie', 'fileUrl': selfieUrl},
+          {'type': '${docType}_recto', 'fileUrl': rectoUrl},
+          {'type': '${docType}_verso', 'fileUrl': versoUrl},
         ],
       });
       if (!mounted) return;

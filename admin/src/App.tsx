@@ -223,7 +223,7 @@ function Kyc() {
         <div className="card" key={d.id}>
           <h3>{d.user.name ?? d.user.phone}</h3>
           <div className="meta">
-            Document : <strong>{d.type.toUpperCase()}</strong> ·{' '}
+            Document : <strong>{d.type.replace('_', ' ').toUpperCase()}</strong> ·{' '}
             <a href={d.fileUrl} target="_blank" rel="noreferrer">Voir le fichier</a>
           </div>
           <div className="row">
