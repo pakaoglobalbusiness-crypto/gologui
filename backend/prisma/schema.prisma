@@ -38,6 +38,7 @@ model User {
   payouts       Payout[]
   otpCodes      OtpCode[]
   disputes      Dispute[]
+  favorites     Favorite[]
 }
 
 model OtpCode {
@@ -88,6 +89,7 @@ model Listing {
   photos       ListingPhoto[]
   availability Availability[]
   bookings     Booking[]
+  favoritedBy  Favorite[]
 }
 
 model VillaDetails {
@@ -237,4 +239,14 @@ model CarCheckin {
   km        Int?
   fuelLevel String?
   createdAt DateTime @default(now())
+}
+
+model Favorite {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@id([userId, listingId])
 }

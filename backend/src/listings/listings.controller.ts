@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -33,9 +34,34 @@ export class ListingsController {
     return this.listings.myListings(user.id);
   }
 
+  // Favoris (déclarés avant ':id' pour la résolution des routes)
+  @Get('favorites/mine')
+  @UseGuards(AuthGuard)
+  favorites(@CurrentUser() user: any) {
+    return this.listings.myFavorites(user.id);
+  }
+
+  @Get('favorites/ids')
+  @UseGuards(AuthGuard)
+  favoriteIds(@CurrentUser() user: any) {
+    return this.listings.myFavoriteIds(user.id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.listings.findOne(id);
+  }
+
+  @Post(':id/favorite')
+  @UseGuards(AuthGuard)
+  addFavorite(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.listings.addFavorite(user.id, id);
+  }
+
+  @Delete(':id/favorite')
+  @UseGuards(AuthGuard)
+  removeFavorite(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.listings.removeFavorite(user.id, id);
   }
 
   @Get(':id/availability')

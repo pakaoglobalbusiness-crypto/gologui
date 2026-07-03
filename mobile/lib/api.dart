@@ -71,6 +71,8 @@ class Api {
           res = await http.post(uri, headers: headers, body: jsonEncode(body ?? {}));
         case 'PATCH':
           res = await http.patch(uri, headers: headers, body: jsonEncode(body ?? {}));
+        case 'DELETE':
+          res = await http.delete(uri, headers: headers);
       }
     } catch (_) {
       throw ApiException('Connexion impossible. Vérifiez votre réseau.');
@@ -104,6 +106,7 @@ class Api {
       _request('POST', path, body: body);
   static Future<dynamic> patch(String path, {Map<String, dynamic>? body}) =>
       _request('PATCH', path, body: body);
+  static Future<dynamic> delete(String path) => _request('DELETE', path);
 }
 
 final _fcfaFormat = NumberFormat.decimalPattern('fr');

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../api.dart';
-import '../main.dart';
+import '../favorites.dart';
+import '../widgets/listing_card.dart';
 import 'listing_detail_screen.dart';
 
-/// Recherche par type, ville et budget (F2) — 3 clics max jusqu'à la demande
-/// de réservation : 1) choisir l'annonce 2) dates 3) réserver.
+/// Accueil / Explorer — design épuré : salutation, type, ville, budget,
+/// cartes immersives avec favoris (F2).
 class SearchTab extends StatefulWidget {
   const SearchTab({super.key});
 
@@ -26,6 +27,7 @@ class _SearchTabState extends State<SearchTab> {
   @override
   void initState() {
     super.initState();
+    Favorites.load().then((_) => mounted ? setState(() {}) : null);
     _search();
   }
 
@@ -45,182 +47,249 @@ class _SearchTabState extends State<SearchTab> {
     }
   }
 
+  String get _greeting {
+    final h = DateTime.now().hour;
+    final name = (Api.currentUser?['name'] as String?)?.split(' ').first;
+    final salut = h < 18 ? 'Bonjour' : 'Bonsoir';
+    return name == null ? '$salut 👋' : '$salut, $name 👋';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gologui'),
-        actions: [
-          IconButton(onPressed: _search, icon: const Icon(Icons.refresh)),
-        ],
-      ),
-      body: Column(
-        children: [
-          Container(
-            color: gologuiTeal,
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Column(
-              children: [
-                SegmentedButton<String>(
-                  style: SegmentedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    selectedBackgroundColor: gologuiOrange,
-                  ),
-                  segments: const [
-                    ButtonSegment(value: 'villa', label: Text('🏠 Villas')),
-                    ButtonSegment(value: 'voiture', label: Text('🚗 Voitures')),
-                  ],
-                  selected: {_type},
-                  onSelectionChanged: (s) {
-                    _type = s.first;
-                    _search();
-                  },
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<String?>(
-                        initialValue: _city,
-                        decoration: const InputDecoration(
-                          labelText: 'Ville',
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                        ),
-                        items: [
-                          const DropdownMenuItem(value: null, child: Text('Toutes')),
-                          ...cities.map(
-                            (c) => DropdownMenuItem(value: c, child: Text(c)),
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: _search,
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _greeting,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: scheme.onSurface.withValues(alpha: 0.55),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                const Text(
+                                  'Où allez-vous ?',
+                                  style: TextStyle(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.8,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset('assets/icon/icon.png', height: 42),
                           ),
                         ],
-                        onChanged: (v) {
-                          _city = v;
-                          _search();
-                        },
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: DropdownButtonFormField<int?>(
-                        initialValue: _maxPrice,
-                        decoration: const InputDecoration(
-                          labelText: 'Budget max/jour',
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      const SizedBox(height: 18),
+                      // Bascule logement / voiture
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        items: const [
-                          DropdownMenuItem(value: null, child: Text('Illimité')),
-                          DropdownMenuItem(value: 25000, child: Text('25 000 F')),
-                          DropdownMenuItem(value: 50000, child: Text('50 000 F')),
-                          DropdownMenuItem(value: 100000, child: Text('100 000 F')),
-                        ],
-                        onChanged: (v) {
-                          _maxPrice = v;
-                          _search();
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : _error != null
-                    ? Center(child: Text(_error!))
-                    : _items.isEmpty
-                        ? const Center(child: Text('Aucune annonce trouvée'))
-                        : RefreshIndicator(
-                            onRefresh: _search,
-                            child: ListView.builder(
-                              padding: const EdgeInsets.all(12),
-                              itemCount: _items.length,
-                              itemBuilder: (_, i) => _ListingCard(
-                                listing: _items[i],
-                                onTap: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => ListingDetailScreen(
-                                      listingId: _items[i]['id'],
+                        child: Row(
+                          children: [
+                            for (final (value, label) in [
+                              ('villa', '🏠  Logements'),
+                              ('voiture', '🚗  Voitures'),
+                            ])
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    if (_type != value) {
+                                      _type = value;
+                                      _search();
+                                    }
+                                  },
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(vertical: 11),
+                                    decoration: BoxDecoration(
+                                      color: _type == value ? scheme.surface : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(13),
+                                      boxShadow: _type == value
+                                          ? [
+                                              BoxShadow(
+                                                color: Colors.black.withValues(alpha: 0.08),
+                                                blurRadius: 8,
+                                              ),
+                                            ]
+                                          : null,
+                                    ),
+                                    child: Text(
+                                      label,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontWeight:
+                                            _type == value ? FontWeight.w700 : FontWeight.w500,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      // Filtres : villes puis budget
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _FilterChip(
+                              label: 'Partout',
+                              selected: _city == null,
+                              onTap: () {
+                                _city = null;
+                                _search();
+                              },
                             ),
-                          ),
+                            for (final c in cities)
+                              _FilterChip(
+                                label: c,
+                                selected: _city == c,
+                                onTap: () {
+                                  _city = c;
+                                  _search();
+                                },
+                              ),
+                            const SizedBox(width: 6),
+                            _FilterChip(
+                              label: _maxPrice == null
+                                  ? '💰 Budget'
+                                  : '≤ ${fcfa(_maxPrice!)}',
+                              selected: _maxPrice != null,
+                              onTap: () async {
+                                final v = await showModalBottomSheet<int?>(
+                                  context: context,
+                                  showDragHandle: true,
+                                  builder: (ctx) => SafeArea(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text(
+                                          'Budget max par jour',
+                                          style: TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        for (final (v, label) in [
+                                          (null, 'Illimité'),
+                                          (25000, '25 000 FCFA'),
+                                          (50000, '50 000 FCFA'),
+                                          (100000, '100 000 FCFA'),
+                                        ])
+                                          ListTile(
+                                            title: Text(label, textAlign: TextAlign.center),
+                                            onTap: () => Navigator.pop(ctx, v ?? -1),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                                if (v != null) {
+                                  _maxPrice = v == -1 ? null : v;
+                                  _search();
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                    ],
+                  ),
+                ),
+              ),
+              if (_loading)
+                const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (_error != null)
+                SliverFillRemaining(child: Center(child: Text(_error!)))
+              else if (_items.isEmpty)
+                const SliverFillRemaining(
+                  child: Center(child: Text('Aucune annonce trouvée')),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  sliver: SliverList.separated(
+                    itemCount: _items.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 16),
+                    itemBuilder: (_, i) => ListingCard(
+                      listing: _items[i],
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              ListingDetailScreen(listingId: _items[i]['id']),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
-class _ListingCard extends StatelessWidget {
-  final Map<String, dynamic> listing;
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool selected;
   final VoidCallback onTap;
-  const _ListingCard({required this.listing, required this.onTap});
+  const _FilterChip({required this.label, required this.selected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final photos = listing['photos'] as List;
-    final rating = (listing['avgRating'] as num).toDouble();
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.only(bottom: 14),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: GestureDetector(
         onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (photos.isNotEmpty)
-              Image.network(
-                photos.first['url'],
-                height: 180,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  height: 180,
-                  color: Colors.grey.shade300,
-                  child: const Icon(Icons.photo, size: 48),
-                ),
-              ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    listing['title'],
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${listing['city']}${listing['district'] != null ? ' · ${listing['district']}' : ''}',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text(
-                        '${fcfa(listing['pricePerDayFcfa'])} / jour',
-                        style: const TextStyle(
-                          color: gologuiTeal,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                        ),
-                      ),
-                      const Spacer(),
-                      if (rating > 0) ...[
-                        const Icon(Icons.star, size: 16, color: Colors.amber),
-                        Text(' $rating (${listing['ratingCount']})'),
-                      ] else
-                        Text('Nouveau', style: TextStyle(color: Colors.grey.shade500)),
-                    ],
-                  ),
-                ],
-              ),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+          decoration: BoxDecoration(
+            color: selected ? scheme.primary : scheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: selected ? scheme.primary : scheme.outlineVariant,
             ),
-          ],
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? scheme.onPrimary : scheme.onSurface,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              fontSize: 13.5,
+            ),
+          ),
         ),
       ),
     );

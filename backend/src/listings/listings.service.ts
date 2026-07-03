@@ -156,6 +156,48 @@ export class ListingsService {
     });
   }
 
+  // Favoris (wishlist type Airbnb)
+  async addFavorite(userId: string, listingId: string) {
+    const listing = await this.prisma.listing.findUnique({ where: { id: listingId } });
+    if (!listing) throw new NotFoundException('Annonce introuvable');
+    await this.prisma.favorite.upsert({
+      where: { userId_listingId: { userId, listingId } },
+      update: {},
+      create: { userId, listingId },
+    });
+    return { favorite: true };
+  }
+
+  async removeFavorite(userId: string, listingId: string) {
+    await this.prisma.favorite.deleteMany({ where: { userId, listingId } });
+    return { favorite: false };
+  }
+
+  async myFavorites(userId: string) {
+    const favs = await this.prisma.favorite.findMany({
+      where: { userId, listing: { status: 'published' } },
+      include: {
+        listing: {
+          include: {
+            photos: { orderBy: { order: 'asc' } },
+            villaDetails: true,
+            carDetails: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return favs.map((f) => f.listing);
+  }
+
+  async myFavoriteIds(userId: string) {
+    const favs = await this.prisma.favorite.findMany({
+      where: { userId },
+      select: { listingId: true },
+    });
+    return favs.map((f) => f.listingId);
+  }
+
   async setAvailability(ownerId: string, listingId: string, dates: string[], status: 'libre' | 'bloque') {
     const listing = await this.prisma.listing.findUnique({ where: { id: listingId } });
     if (!listing) throw new NotFoundException('Annonce introuvable');

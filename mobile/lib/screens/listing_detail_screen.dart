@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../api.dart';
+import '../favorites.dart';
 import '../main.dart';
 import 'payment_screen.dart';
 
@@ -105,7 +106,25 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
     final owner = l['owner'];
 
     return Scaffold(
-      appBar: AppBar(title: Text(isVilla ? 'Villa' : 'Voiture')),
+      appBar: AppBar(
+        title: Text(isVilla ? 'Logement' : 'Voiture'),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await Favorites.toggle(widget.listingId);
+              if (mounted) setState(() {});
+            },
+            icon: Icon(
+              Favorites.contains(widget.listingId)
+                  ? Icons.favorite
+                  : Icons.favorite_border,
+              color: Favorites.contains(widget.listingId)
+                  ? const Color(0xFFFF5A5F)
+                  : null,
+            ),
+          ),
+        ],
+      ),
       body: ListView(
         children: [
           if (photos.isNotEmpty)

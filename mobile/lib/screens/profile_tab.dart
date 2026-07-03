@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../api.dart';
+import '../favorites.dart';
 import '../main.dart';
 import 'create_listing_screen.dart';
+import 'favorites_screen.dart';
 import 'login_screen.dart';
 import 'owner_bookings_screen.dart';
 
@@ -75,6 +77,34 @@ class _ProfileTabState extends State<ProfileTab> {
     return Api.uploadBytes(await picked.readAsBytes(), picked.name);
   }
 
+  // Photo de profil : galerie/caméra → upload → PATCH /users/me
+  Future<void> _changePhoto() async {
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 800,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+    try {
+      final url = await Api.uploadBytes(await picked.readAsBytes(), picked.name);
+      await Api.patch('/users/me', body: {'photoUrl': url});
+      // Met à jour la session locale pour l'avatar ailleurs dans l'app
+      final me = await Api.get('/users/me');
+      Api.currentUser = me;
+      if (mounted) {
+        setState(() => _me = me);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Photo de profil mise à jour ✓')),
+        );
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    }
+  }
+
   Future<void> _submitKyc() async {
     try {
       final cniUrl = await _pickAndUpload('Photo de votre pièce d’identité (CNI ou passeport)');
@@ -116,16 +146,43 @@ class _ProfileTabState extends State<ProfileTab> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  // Identité
+                  // Identité + photo de profil
                   Row(
                     children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: gologuiTeal,
-                        child: Text(
-                          (me['name'] ?? '?')[0],
-                          style: const TextStyle(color: Colors.white, fontSize: 24),
-                        ),
+                      Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 34,
+                            backgroundColor: gologuiTeal,
+                            backgroundImage: me['photoUrl'] != null
+                                ? NetworkImage(me['photoUrl'])
+                                : null,
+                            child: me['photoUrl'] == null
+                                ? Text(
+                                    (me['name'] ?? '?')[0],
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 26),
+                                  )
+                                : null,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Material(
+                              color: gologuiOrange,
+                              shape: const CircleBorder(),
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                onTap: _changePhoto,
+                                child: const Padding(
+                                  padding: EdgeInsets.all(5),
+                                  child: Icon(Icons.photo_camera,
+                                      size: 15, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -146,6 +203,25 @@ class _ProfileTabState extends State<ProfileTab> {
                     ],
                   ),
                   const SizedBox(height: 16),
+                  // Favoris
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.favorite, color: Color(0xFFFF5A5F)),
+                      title: const Text('Mes favoris'),
+                      subtitle: Text(
+                        Favorites.ids.isEmpty
+                            ? 'Les annonces que vous aimez'
+                            : '${Favorites.ids.length} annonce(s) enregistrée(s)',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.of(context)
+                          .push(MaterialPageRoute(
+                            builder: (_) => const FavoritesScreen(),
+                          ))
+                          .then((_) => setState(() {})),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   // KYC
                   Card(
                     child: ListTile(
@@ -252,6 +328,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   OutlinedButton.icon(
                     onPressed: () async {
                       await Api.logout();
+                      Favorites.reset();
                       if (context.mounted) {
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(builder: (_) => const LoginScreen()),
