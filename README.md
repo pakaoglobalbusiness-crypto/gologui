@@ -79,21 +79,46 @@ l'interface (`devCode`) — aucun SMS réel n'est envoyé.
 - **Confiance** : KYC obligatoire pour publier, localisation exacte révélée
   après paiement uniquement.
 
+## Intégrations prêtes à activer (`.env`)
+
+Copier `backend/.env.example` vers `backend/.env` :
+
+- **Paiements PayDunya** : `PAYMENT_PROVIDER=paydunya` + clés `PAYDUNYA_*`
+  (sandbox avec `PAYDUNYA_MODE=test`). L'adaptateur couvre Wave, Orange Money,
+  Free Money et carte via la page de checkout, et vérifie le hash des webhooks.
+  CinetPay/Paystack : implémenter `PaymentProvider`
+  (`backend/src/payments/providers/`).
+- **SMS réels** : `SMS_PROVIDER=orange` (Orange SMS API Sénégal, clés
+  `ORANGE_SMS_*`) ou `SMS_PROVIDER=twilio`. En mock, le code OTP est renvoyé
+  dans la réponse API.
+- **Sécurité active** : rate limiting global (100 req/min/IP) et strict sur
+  l'OTP (5/min), en-têtes Helmet, `JWT_SECRET` obligatoire en production,
+  CORS restreint via `CORS_ORIGINS`.
+- **Uploads** : `POST /api/v1/uploads` (multipart, 8 Mo max, jpg/png/webp/pdf),
+  stockage local `backend/uploads/` servi sur `/uploads` — remplacer par
+  multer-s3 pour la prod sans changer le contrat.
+
+## APK Android
+
+```bash
+export JAVA_HOME=~/development/jdk17/Contents/Home
+export ANDROID_HOME=~/development/android-sdk
+export PATH="$HOME/development/flutter/bin:$PATH"
+cd mobile && flutter build apk --release
+# → build/app/outputs/flutter-apk/app-release.apk, à installer sur le téléphone
+```
+
+Sur téléphone, l'app doit pointer vers l'IP de votre machine :
+`flutter build apk --release --dart-define=API_URL=http://192.168.x.x:3000/api/v1`
+
 ## Passage en production — reste à faire
 
-1. **Base de données** : basculer `backend/prisma/schema.prisma` sur
-   PostgreSQL + PostGIS (le schéma est compatible) ; verrous de disponibilité
-   sur Redis.
-2. **Paiements réels** : signer avec PayDunya / CinetPay / Paystack, remplacer
-   `PaymentsService` mock (variable `PAYMENT_PROVIDER`), vérifier la signature
-   HMAC des webhooks.
-3. **SMS réels** : brancher un fournisseur (Orange SMS API, AxiomText, Twilio)
-   dans `AuthService` (variable `SMS_PROVIDER`).
-4. **Upload de fichiers** : stockage S3 + CDN pour les photos d'annonces et
-   documents KYC (actuellement : URLs).
-5. **Push** : Firebase Cloud Messaging (les points d'accroche `[Notif mock]`
-   sont dans le code).
-6. **Sécurité** : rate limiting, HTTPS, secrets en variables d'environnement,
-   audit log.
-7. **Conformité** : déclaration CDP (loi 2008-12), conservation KYC BCEAO,
+1. **Base de données** : basculer sur PostgreSQL + PostGIS (le schéma Prisma
+   est compatible) ; verrous de disponibilité sur Redis.
+2. **Comptes à ouvrir** : PayDunya (ou CinetPay/Paystack), Orange SMS API,
+   S3/CDN, Firebase (push — points d'accroche `[Notif mock]` dans le code).
+3. **Conformité** : déclaration CDP (loi 2008-12), conservation KYC BCEAO,
    dépôt de marque OAPI, domaine sunuyeuf.sn.
+4. **Publication** : comptes Google Play Console (25 $ une fois) et Apple
+   Developer (99 $/an) ; signature de l'APK avec une clé de release
+   (`android/key.properties`).

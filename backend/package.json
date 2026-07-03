@@ -6,7 +6,10 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/src/main.js",
+    "start:render": "prisma db push --accept-data-loss && ts-node prisma/seed.ts && node dist/src/main.js",
     "dev": "ts-node src/main.ts",
+    "dev:db": "prisma db push --schema prisma/schema.sqlite.prisma",
+    "dev:generate": "prisma generate --schema prisma/schema.sqlite.prisma",
     "seed": "ts-node prisma/seed.ts",
     "db:push": "prisma db push"
   },

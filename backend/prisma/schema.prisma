@@ -1,15 +1,18 @@
-// Sunuyeuf — modèle de données (SQLite en dev, PostgreSQL en prod)
+// Sunuyeuf — modèle de données PRODUCTION (PostgreSQL).
+// Pour le dev local sans PostgreSQL, utiliser schema.sqlite.prisma
+// (scripts npm run dev:db / dev:seed). Les deux schémas doivent rester
+// identiques hors bloc datasource.
 // Les montants sont en FCFA (XOF), entiers — pas de centimes.
-// SQLite ne supporte pas les enums Prisma : les champs "statut" sont des String
-// validées côté application (voir src/common/constants.ts).
+// Les champs "statut" sont des String validées côté application
+// (voir src/common/constants.ts) pour rester compatibles SQLite.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./sunuyeuf.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {

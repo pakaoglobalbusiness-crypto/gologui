@@ -1,0 +1,237 @@
+// Sunuyeuf — modèle de données (SQLite en dev, PostgreSQL en prod)
+// Les montants sont en FCFA (XOF), entiers — pas de centimes.
+// SQLite ne supporte pas les enums Prisma : les champs "statut" sont des String
+// validées côté application (voir src/common/constants.ts).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./sunuyeuf.db"
+}
+
+model User {
+  id            String   @id @default(cuid())
+  phone         String   @unique
+  name          String?
+  photoUrl      String?
+  role          String   @default("renter") // renter | owner | admin
+  kycStatus     String   @default("none") // none | pending | verified | rejected
+  avgRating     Float    @default(0)
+  ratingCount   Int      @default(0)
+  payoutMethod  String? // wave | orange_money | free_money | bank
+  payoutAccount String?
+  blocked       Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  listings      Listing[]
+  bookings      Booking[]      @relation("RenterBookings")
+  kycDocuments  KycDocument[]
+  sentMessages  Message[]
+  reviewsGiven  Review[]       @relation("ReviewAuthor")
+  reviewsGotten Review[]       @relation("ReviewTarget")
+  payouts       Payout[]
+  otpCodes      OtpCode[]
+  disputes      Dispute[]
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  code      String
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
+model KycDocument {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  type       String // cni | passeport | carte_grise | assurance | selfie
+  fileUrl    String
+  status     String    @default("pending") // pending | approved | rejected
+  verifiedBy String?
+  verifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model Listing {
+  id                 String   @id @default(cuid())
+  ownerId            String
+  owner              User     @relation(fields: [ownerId], references: [id])
+  type               String // villa | voiture
+  title              String
+  description        String
+  city               String
+  district           String?
+  lat                Float?
+  lng                Float?
+  pricePerDayFcfa    Int
+  depositFcfa        Int      @default(0)
+  cancellationPolicy String   @default("moderate") // flexible | moderate | strict
+  instantBooking     Boolean  @default(false)
+  status             String   @default("draft") // draft | in_moderation | published | suspended
+  avgRating          Float    @default(0)
+  ratingCount        Int      @default(0)
+  createdAt          DateTime @default(now())
+
+  villaDetails VillaDetails?
+  carDetails   CarDetails?
+  photos       ListingPhoto[]
+  availability Availability[]
+  bookings     Booking[]
+}
+
+model VillaDetails {
+  listingId String  @id
+  listing   Listing @relation(fields: [listingId], references: [id])
+  bedrooms  Int
+  bathrooms Int
+  capacity  Int
+  pool      Boolean @default(false)
+  wifi      Boolean @default(false)
+  ac        Boolean @default(false)
+  guard     Boolean @default(false)
+}
+
+model CarDetails {
+  listingId      String  @id
+  listing        Listing @relation(fields: [listingId], references: [id])
+  brand          String
+  model          String
+  year           Int
+  gearbox        String // manuelle | automatique
+  fuel           String // essence | diesel | hybride | electrique
+  withDriver     Boolean @default(false)
+  kmIncludedDay  Int     @default(0) // 0 = illimité
+  deliveryPlace  String // aeroport_aibd | domicile | agence
+}
+
+model ListingPhoto {
+  id        String  @id @default(cuid())
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id])
+  url       String
+  order     Int     @default(0)
+}
+
+model Availability {
+  listingId String
+  date      DateTime
+  status    String // libre | bloque | reserve
+  listing   Listing @relation(fields: [listingId], references: [id])
+
+  @@id([listingId, date])
+}
+
+model Booking {
+  id                 String   @id @default(cuid())
+  listingId          String
+  listing            Listing  @relation(fields: [listingId], references: [id])
+  renterId           String
+  renter             User     @relation("RenterBookings", fields: [renterId], references: [id])
+  startDate          DateTime
+  endDate            DateTime
+  totalPriceFcfa     Int
+  commissionFcfa     Int
+  status             String   @default("requested") // requested | accepted | paid | ongoing | completed | cancelled | disputed | rejected | expired
+  cancellationPolicy String // figée à la réservation
+  createdAt          DateTime @default(now())
+
+  payments     Payment[]
+  payout       Payout?
+  conversation Conversation?
+  reviews      Review[]
+  disputes     Dispute[]
+  carCheckins  CarCheckin[]
+}
+
+model Payment {
+  id             String   @id @default(cuid())
+  bookingId      String
+  booking        Booking  @relation(fields: [bookingId], references: [id])
+  method         String // wave | orange_money | free_money | carte
+  aggregatorRef  String   @unique
+  amountFcfa     Int
+  kind           String   @default("rental") // rental | deposit | refund
+  status         String   @default("initiated") // initiated | confirmed | failed | refunded
+  webhookPayload String?
+  createdAt      DateTime @default(now())
+}
+
+model Payout {
+  id         String    @id @default(cuid())
+  ownerId    String
+  owner      User      @relation(fields: [ownerId], references: [id])
+  bookingId  String    @unique
+  booking    Booking   @relation(fields: [bookingId], references: [id])
+  amountFcfa Int
+  method     String
+  status     String    @default("scheduled") // scheduled | sent | failed
+  sentAt     DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  bookingId String    @unique
+  booking   Booking   @relation(fields: [bookingId], references: [id])
+  createdAt DateTime  @default(now())
+  messages  Message[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id])
+  body           String
+  photoUrl       String?
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  authorId  String
+  author    User     @relation("ReviewAuthor", fields: [authorId], references: [id])
+  targetId  String
+  target    User     @relation("ReviewTarget", fields: [targetId], references: [id])
+  rating    Int // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+
+  @@unique([bookingId, authorId])
+}
+
+model Dispute {
+  id         String    @id @default(cuid())
+  bookingId  String
+  booking    Booking   @relation(fields: [bookingId], references: [id])
+  openedById String
+  openedBy   User      @relation(fields: [openedById], references: [id])
+  reason     String
+  status     String    @default("open") // open | resolved | rejected
+  resolution String?
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+}
+
+model CarCheckin {
+  id        String   @id @default(cuid())
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  type      String // remise | retour
+  photos    String // JSON array d'URLs
+  km        Int?
+  fuelLevel String?
+  createdAt DateTime @default(now())
+}
