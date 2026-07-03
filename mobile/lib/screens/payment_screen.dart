@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../api.dart';
 import '../main.dart';
@@ -43,6 +44,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
         'method': _method,
       });
       final paymentId = res['paymentId'];
+      // Agrégateur réel (PayDunya…) : on ouvre sa page de paiement sécurisée ;
+      // le polling ci-dessous détecte la confirmation envoyée par le webhook.
+      final paymentUrl = res['paymentUrl'] as String?;
+      if (paymentUrl != null && !paymentUrl.contains('pay.mock.sunuyeuf.sn')) {
+        await launchUrl(Uri.parse(paymentUrl), mode: LaunchMode.externalApplication);
+      }
       _pollTimer = Timer.periodic(const Duration(seconds: 1), (t) async {
         try {
           final s = await Api.get('/payments/$paymentId/status');

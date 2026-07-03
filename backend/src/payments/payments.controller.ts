@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { IsIn, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 import { AuthGuard, CurrentUser } from '../auth/auth.guard';
 import { PaymentsService } from './payments.service';
@@ -25,12 +34,26 @@ export class PaymentsController {
     return this.payments.initiate(user.id, dto.bookingId, dto.method);
   }
 
-  // Webhook agrégateur — non authentifié par JWT : c'est la signature du
-  // fournisseur (hash PayDunya) qui fait foi.
+  // Webhook générique (format interne, utilisé par le mode mock et les tests).
   @Post('webhook')
   webhook(@Req() req: any, @Body() dto: WebhookDto) {
     this.payments.assertWebhookAuthentic(req.headers, JSON.stringify(dto));
     return this.payments.handleWebhook(dto.aggregatorRef, dto.status, dto.payload);
+  }
+
+  // IPN PayDunya (https://developers.paydunya.com — « Instant Payment
+  // Notification ») : POST form-encodé { data: { invoice: { token },
+  // status: 'completed'|'cancelled'|'failed', hash } }. Le hash (SHA-512 de
+  // la master key) est vérifié par le provider. C'est cette URL qu'il faut
+  // mettre dans PAYMENT_CALLBACK_URL.
+  @Post('webhook/paydunya')
+  webhookPaydunya(@Req() req: any, @Body() body: Record<string, any>) {
+    this.payments.assertWebhookAuthentic(req.headers, JSON.stringify(body));
+    const data = body?.data ?? body;
+    const token: string | undefined = data?.invoice?.token;
+    if (!token) throw new BadRequestException('Token de facture PayDunya absent');
+    const status = data?.status === 'completed' ? 'confirmed' : 'failed';
+    return this.payments.handleWebhook(token, status, body);
   }
 
   @Get('payouts/mine')
