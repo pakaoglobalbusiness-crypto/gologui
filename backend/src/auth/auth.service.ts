@@ -5,16 +5,17 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma.service';
+import { SmsService } from '../notifications/sms.service';
 import { OTP_MAX_ATTEMPTS, OTP_TTL_MINUTES } from '../common/constants';
 
-// En dev, l'envoi SMS est simulé : le code est loggé en console et,
-// si SMS_PROVIDER=mock (défaut), renvoyé dans la réponse API (champ devCode)
-// pour permettre les tests sans fournisseur SMS.
+// Si SMS_PROVIDER=mock (défaut en dev), le code est loggé et renvoyé dans
+// la réponse API (champ devCode) pour permettre les tests sans compte SMS.
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
+    private sms: SmsService,
   ) {}
 
   private normalizePhone(phone: string): string {
@@ -43,9 +44,15 @@ export class AuthService {
       },
     });
 
-    console.log(`[SMS mock] OTP pour ${normalized} : ${code}`);
-    const isMock = (process.env.SMS_PROVIDER ?? 'mock') === 'mock';
-    return { sent: true, phone: normalized, ...(isMock ? { devCode: code } : {}) };
+    await this.sms.send(
+      normalized,
+      `Sunuyeuf : votre code de connexion est ${code}. Valable ${OTP_TTL_MINUTES} min.`,
+    );
+    return {
+      sent: true,
+      phone: normalized,
+      ...(this.sms.isMock ? { devCode: code } : {}),
+    };
   }
 
   async verifyOtp(phone: string, code: string) {

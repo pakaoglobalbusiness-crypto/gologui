@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { PrismaService } from '../prisma.service';
+import { SmsService } from '../notifications/sms.service';
 import { AuthGuard } from './auth.guard';
 
 @Global()
@@ -15,7 +16,7 @@ import { AuthGuard } from './auth.guard';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService, AuthGuard],
-  exports: [AuthService, AuthGuard, PrismaService],
+  providers: [AuthService, PrismaService, AuthGuard, SmsService],
+  exports: [AuthService, AuthGuard, PrismaService, SmsService],
 })
 export class AuthModule {}

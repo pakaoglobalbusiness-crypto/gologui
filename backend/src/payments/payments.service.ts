@@ -1,23 +1,26 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { BookingsService } from '../bookings/bookings.service';
+import { PaymentProvider } from './providers/payment-provider';
 import { PAYMENT_METHODS } from '../common/constants';
 
-// Agrégateur de paiement SIMULÉ (PayDunya/CinetPay/Paystack en prod).
-// initiate() renvoie une référence + une URL de paiement fictive ;
-// le webhook /payments/webhook simule la confirmation de l'agrégateur.
-// En mode mock (PAYMENT_PROVIDER=mock, défaut), initiate() confirme
-// automatiquement après 2 s pour fluidifier les démos.
+// L'agrégateur réel (PayDunya) ou simulé est choisi par PAYMENT_PROVIDER.
+// En mode mock, initiate() confirme automatiquement après 2 s pour
+// fluidifier les démos ; en prod, c'est le webhook signé de l'agrégateur
+// qui confirme.
 @Injectable()
 export class PaymentsService {
   constructor(
     private prisma: PrismaService,
     private bookings: BookingsService,
+    @Inject('PAYMENT_PROVIDER') private provider: PaymentProvider,
   ) {}
 
   async initiate(renterId: string, bookingId: string, method: string) {
@@ -36,21 +39,30 @@ export class PaymentsService {
       );
     }
 
-    const ref = `sy_${bookingId.slice(-6)}_${Date.now()}`;
+    const reference = `sy_${bookingId.slice(-6)}_${Date.now()}`;
+    const renter = await this.prisma.user.findUniqueOrThrow({ where: { id: renterId } });
+    const { aggregatorRef, paymentUrl } = await this.provider.initiate({
+      reference,
+      amountFcfa: booking.totalPriceFcfa,
+      method,
+      description: `Location « ${booking.listing.title} »`,
+      customerPhone: renter.phone,
+    });
+
     const payment = await this.prisma.payment.create({
       data: {
         bookingId,
         method,
-        aggregatorRef: ref,
+        aggregatorRef,
         amountFcfa: booking.totalPriceFcfa,
         kind: 'rental',
         status: 'initiated',
       },
     });
 
-    if ((process.env.PAYMENT_PROVIDER ?? 'mock') === 'mock') {
+    if (this.provider.name === 'mock') {
       setTimeout(() => {
-        this.handleWebhook(ref, 'confirmed', { mock: true }).catch((e) =>
+        this.handleWebhook(aggregatorRef, 'confirmed', { mock: true }).catch((e) =>
           console.error('[Paiement mock] échec confirmation auto:', e.message),
         );
       }, 2000);
@@ -58,13 +70,18 @@ export class PaymentsService {
 
     return {
       paymentId: payment.id,
-      aggregatorRef: ref,
+      aggregatorRef,
       amountFcfa: booking.totalPriceFcfa,
       method,
-      // En prod : URL de redirection PayDunya/CinetPay ou push USSD Wave/OM
-      paymentUrl: `https://pay.mock.sunuyeuf.sn/checkout/${ref}`,
+      paymentUrl,
       status: 'initiated',
     };
+  }
+
+  assertWebhookAuthentic(headers: Record<string, string>, rawBody: string) {
+    if (!this.provider.verifyWebhook(headers, rawBody)) {
+      throw new UnauthorizedException('Signature du webhook invalide');
+    }
   }
 
   async handleWebhook(aggregatorRef: string, status: string, payload: unknown) {

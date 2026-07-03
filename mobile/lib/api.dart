@@ -85,6 +85,19 @@ class Api {
     return data;
   }
 
+  /// Upload multipart d'une photo/document ; renvoie l'URL publique.
+  static Future<String> uploadBytes(List<int> bytes, String filename) async {
+    final req = http.MultipartRequest('POST', Uri.parse('$apiBase/uploads'));
+    if (_token != null) req.headers['Authorization'] = 'Bearer $_token';
+    req.files.add(http.MultipartFile.fromBytes('file', bytes, filename: filename));
+    final res = await http.Response.fromStream(await req.send());
+    final data = jsonDecode(res.body);
+    if (res.statusCode >= 400) {
+      throw ApiException(data['message']?.toString() ?? 'Échec de l’upload');
+    }
+    return data['url'] as String;
+  }
+
   static Future<dynamic> get(String path, {Map<String, String>? query}) =>
       _request('GET', path, query: query);
   static Future<dynamic> post(String path, {Map<String, dynamic>? body}) =>

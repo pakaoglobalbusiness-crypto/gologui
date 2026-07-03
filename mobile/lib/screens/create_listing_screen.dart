@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../api.dart';
 import '../main.dart';
@@ -19,9 +20,30 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   // Étape 1 : type
   String _type = 'villa';
 
-  // Étape 2 : photos (URLs en dev ; upload caméra/galerie en prod)
-  final _photoCtrl = TextEditingController();
+  // Étape 2 : photos — galerie/appareil photo, uploadées vers l'API
   final List<String> _photos = [];
+  bool _uploading = false;
+
+  Future<void> _pickPhoto(ImageSource source) async {
+    final picked = await ImagePicker().pickImage(
+      source: source,
+      maxWidth: 1600,
+      imageQuality: 82, // compression (connexions 3G, spec §3)
+    );
+    if (picked == null) return;
+    setState(() => _uploading = true);
+    try {
+      final url = await Api.uploadBytes(await picked.readAsBytes(), picked.name);
+      setState(() => _photos.add(url));
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
 
   // Étape 3 : description
   final _titleCtrl = TextEditingController();
@@ -157,43 +179,66 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
           Text(
-            'Des photos authentiques inspirent confiance. '
-            '(En version finale : appareil photo / galerie.)',
+            'Des photos authentiques inspirent confiance et accélèrent '
+            'la validation de votre annonce.',
             style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
           ),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
-                child: TextField(
-                  controller: _photoCtrl,
-                  decoration: const InputDecoration(hintText: 'URL de la photo'),
+                child: OutlinedButton.icon(
+                  onPressed: _uploading ? null : () => _pickPhoto(ImageSource.camera),
+                  icon: const Icon(Icons.photo_camera),
+                  label: const Text('Appareil photo'),
                 ),
               ),
-              const SizedBox(width: 8),
-              IconButton.filled(
-                style: IconButton.styleFrom(backgroundColor: senegalGreen),
-                onPressed: () {
-                  if (_photoCtrl.text.trim().isNotEmpty) {
-                    setState(() {
-                      _photos.add(_photoCtrl.text.trim());
-                      _photoCtrl.clear();
-                    });
-                  }
-                },
-                icon: const Icon(Icons.add),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _uploading ? null : () => _pickPhoto(ImageSource.gallery),
+                  icon: const Icon(Icons.photo_library),
+                  label: const Text('Galerie'),
+                ),
               ),
             ],
           ),
+          if (_uploading)
+            const Padding(
+              padding: EdgeInsets.only(top: 14),
+              child: Center(child: CircularProgressIndicator()),
+            ),
           const SizedBox(height: 12),
-          for (final (i, url) in _photos.indexed)
-            ListTile(
-              dense: true,
-              leading: const Icon(Icons.photo),
-              title: Text(url, maxLines: 1, overflow: TextOverflow.ellipsis),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.red),
-                onPressed: () => setState(() => _photos.removeAt(i)),
+          if (_photos.isNotEmpty)
+            SizedBox(
+              height: 110,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: _photos.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (_, i) => Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        _photos[i],
+                        width: 140,
+                        height: 110,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      top: 2,
+                      right: 2,
+                      child: IconButton.filled(
+                        style: IconButton.styleFrom(backgroundColor: Colors.black54),
+                        iconSize: 16,
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () => setState(() => _photos.removeAt(i)),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
         ],

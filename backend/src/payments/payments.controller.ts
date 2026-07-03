@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { IsIn, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 import { AuthGuard, CurrentUser } from '../auth/auth.guard';
 import { PaymentsService } from './payments.service';
@@ -25,10 +25,11 @@ export class PaymentsController {
     return this.payments.initiate(user.id, dto.bookingId, dto.method);
   }
 
-  // Webhook agrégateur — non authentifié par JWT ; en prod, vérifier la
-  // signature HMAC de l'agrégateur.
+  // Webhook agrégateur — non authentifié par JWT : c'est la signature du
+  // fournisseur (hash PayDunya) qui fait foi.
   @Post('webhook')
-  webhook(@Body() dto: WebhookDto) {
+  webhook(@Req() req: any, @Body() dto: WebhookDto) {
+    this.payments.assertWebhookAuthentic(req.headers, JSON.stringify(dto));
     return this.payments.handleWebhook(dto.aggregatorRef, dto.status, dto.payload);
   }
 

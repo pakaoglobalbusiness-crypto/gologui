@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../api.dart';
 import '../main.dart';
@@ -62,13 +63,28 @@ class _ProfileTabState extends State<ProfileTab> {
     }
   }
 
+  Future<String?> _pickAndUpload(String prompt) async {
+    if (!mounted) return null;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(prompt)));
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery, // caméra sur téléphone, galerie en dev web
+      maxWidth: 1600,
+      imageQuality: 85,
+    );
+    if (picked == null) return null;
+    return Api.uploadBytes(await picked.readAsBytes(), picked.name);
+  }
+
   Future<void> _submitKyc() async {
-    // En dev : on envoie des URLs fictives ; en prod, upload photo CNI + selfie.
     try {
+      final cniUrl = await _pickAndUpload('Photo de votre pièce d’identité (CNI ou passeport)');
+      if (cniUrl == null) return;
+      final selfieUrl = await _pickAndUpload('Maintenant, un selfie bien éclairé');
+      if (selfieUrl == null) return;
       await Api.post('/users/me/kyc', body: {
         'documents': [
-          {'type': 'cni', 'fileUrl': 'https://demo.sunuyeuf.sn/kyc/cni.jpg'},
-          {'type': 'selfie', 'fileUrl': 'https://demo.sunuyeuf.sn/kyc/selfie.jpg'},
+          {'type': 'cni', 'fileUrl': cniUrl},
+          {'type': 'selfie', 'fileUrl': selfieUrl},
         ],
       });
       if (!mounted) return;
