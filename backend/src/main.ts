@@ -13,8 +13,15 @@ async function bootstrap() {
   }
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.setGlobalPrefix('api/v1');
+  // Derrière le proxy Render : req.protocol doit refléter X-Forwarded-Proto
+  // (sinon les URLs d'upload sont générées en http:// et bloquées en https).
+  app.set('trust proxy', 1);
   mkdirSync(UPLOADS_DIR, { recursive: true });
-  app.useStaticAssets(UPLOADS_DIR, { prefix: '/uploads' });
+  app.useStaticAssets(UPLOADS_DIR, {
+    prefix: '/uploads',
+    // CORS explicite : Flutter web (CanvasKit) charge les images via fetch
+    setHeaders: (res) => res.setHeader('Access-Control-Allow-Origin', '*'),
+  });
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(json({ limit: '2mb' }));
   app.enableCors({ origin: process.env.CORS_ORIGINS?.split(',') ?? true });
