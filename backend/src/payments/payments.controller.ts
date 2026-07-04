@@ -8,7 +8,15 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { IsIn, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 import { AuthGuard, CurrentUser } from '../auth/auth.guard';
 import { PaymentsService } from './payments.service';
 import { PAYMENT_METHODS } from '../common/constants';
@@ -16,6 +24,13 @@ import { PAYMENT_METHODS } from '../common/constants';
 class InitiatePaymentDto {
   @IsString() @IsNotEmpty() bookingId!: string;
   @IsIn(PAYMENT_METHODS as unknown as string[]) method!: string;
+}
+
+class WithdrawalDto {
+  @IsInt() @Min(1000) amountFcfa!: number;
+  @IsIn(['wave', 'orange_money', 'bank']) method!: string;
+  @IsString() @IsNotEmpty() account!: string;
+  @IsString() @IsNotEmpty() name!: string;
 }
 
 class WebhookDto {
@@ -60,6 +75,31 @@ export class PaymentsController {
   @UseGuards(AuthGuard)
   myPayouts(@CurrentUser() user: any) {
     return this.payments.myPayouts(user.id);
+  }
+
+  // Portefeuille : solde + retraits
+  @Get('balance')
+  @UseGuards(AuthGuard)
+  balance(@CurrentUser() user: any) {
+    return this.payments.balance(user.id);
+  }
+
+  @Post('withdrawals')
+  @UseGuards(AuthGuard)
+  withdraw(@CurrentUser() user: any, @Body() dto: WithdrawalDto) {
+    return this.payments.requestWithdrawal(
+      user.id,
+      dto.amountFcfa,
+      dto.method,
+      dto.account,
+      dto.name,
+    );
+  }
+
+  @Get('withdrawals/mine')
+  @UseGuards(AuthGuard)
+  myWithdrawals(@CurrentUser() user: any) {
+    return this.payments.myWithdrawals(user.id);
   }
 
   @Get(':id/status')

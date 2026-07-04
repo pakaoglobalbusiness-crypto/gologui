@@ -126,4 +126,71 @@ export class PaymentsService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  // Solde disponible = gains (payouts non échoués) − retraits (en cours ou envoyés)
+  async balance(userId: string) {
+    const payouts = await this.prisma.payout.findMany({
+      where: { ownerId: userId, status: { not: 'failed' } },
+      select: { amountFcfa: true, status: true },
+    });
+    const withdrawals = await this.prisma.withdrawalRequest.findMany({
+      where: { userId, status: { not: 'rejected' } },
+      select: { amountFcfa: true },
+    });
+    const earnedFcfa = payouts.reduce((s, p) => s + p.amountFcfa, 0);
+    const withdrawnFcfa = withdrawals.reduce((s, w) => s + w.amountFcfa, 0);
+    const sentFcfa = payouts
+      .filter((p) => p.status === 'sent')
+      .reduce((s, p) => s + p.amountFcfa, 0);
+    const pendingFcfa = payouts
+      .filter((p) => p.status === 'scheduled')
+      .reduce((s, p) => s + p.amountFcfa, 0);
+    return {
+      balanceFcfa: Math.max(0, earnedFcfa - withdrawnFcfa),
+      earnedFcfa,
+      withdrawnFcfa,
+      sentFcfa,
+      pendingFcfa,
+    };
+  }
+
+  // Demande de transfert du solde vers Wave / Orange Money / banque.
+  // Crée une demande "pending" que l'administrateur traite (le virement réel
+  // est effectué par l'opérateur — l'app ne déplace pas d'argent elle-même).
+  async requestWithdrawal(
+    userId: string,
+    amountFcfa: number,
+    method: string,
+    account: string,
+    name: string,
+  ) {
+    const { balanceFcfa } = await this.balance(userId);
+    if (amountFcfa < 1000) {
+      throw new BadRequestException('Montant minimum : 1 000 FCFA');
+    }
+    if (amountFcfa > balanceFcfa) {
+      throw new BadRequestException(
+        `Solde insuffisant (disponible : ${balanceFcfa} FCFA)`,
+      );
+    }
+    // Mémorise les coordonnées pour la prochaine fois
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { payoutMethod: method, payoutAccount: account, payoutName: name },
+    });
+    const w = await this.prisma.withdrawalRequest.create({
+      data: { userId, amountFcfa, method, account, name },
+    });
+    console.log(
+      `[Retrait] Demande ${w.id} : ${amountFcfa} FCFA vers ${method} (${account})`,
+    );
+    return w;
+  }
+
+  async myWithdrawals(userId: string) {
+    return this.prisma.withdrawalRequest.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }
