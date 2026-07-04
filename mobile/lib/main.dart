@@ -6,6 +6,7 @@ import 'api.dart';
 import 'senegal_data.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/terms_screen.dart';
 
 // Palette Gologui — tirée du logo (singe orange sur vert sapin)
 const gologuiTeal = Color(0xFF0B4F47);
@@ -122,7 +123,11 @@ class GologuiApp extends StatelessWidget {
       theme: _buildTheme(Brightness.light),
       darkTheme: _buildTheme(Brightness.dark),
       themeMode: ThemeMode.system, // s'adapte au réglage du téléphone
-      home: Api.isLoggedIn ? const HomeScreen() : const LoginScreen(),
+      home: !Api.isLoggedIn
+          ? const LoginScreen()
+          : (Api.currentUser?['acceptedTermsAt'] != null
+              ? const HomeScreen()
+              : const TermsScreen()),
     );
   }
 }

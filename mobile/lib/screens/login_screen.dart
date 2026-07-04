@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../api.dart';
 import '../main.dart';
 import 'home_screen.dart';
+import 'terms_screen.dart';
 
 /// Connexion par numéro de téléphone + OTP SMS (F1).
 /// Pas de mot de passe : simplicité maximale.
@@ -45,8 +46,12 @@ class _LoginScreenState extends State<LoginScreen> {
       });
       await Api.setSession(res['token'], res['user']);
       if (!mounted) return;
+      // Conditions d'utilisation à accepter avant l'accès (une seule fois)
+      final accepted = res['user']?['acceptedTermsAt'] != null;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        MaterialPageRoute(
+          builder: (_) => accepted ? const HomeScreen() : const TermsScreen(),
+        ),
       );
     } on ApiException catch (e) {
       setState(() => _error = e.message);

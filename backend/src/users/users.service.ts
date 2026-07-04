@@ -28,6 +28,13 @@ export class UsersService {
     return this.prisma.user.update({ where: { id: userId }, data });
   }
 
+  acceptTerms(userId: string) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { acceptedTermsAt: new Date() },
+    });
+  }
+
   // Soumission KYC (F15) — en dev les fichiers sont des URLs ; en prod, upload S3
   async submitKyc(userId: string, docs: { type: string; fileUrl: string }[]) {
     await this.prisma.kycDocument.createMany({

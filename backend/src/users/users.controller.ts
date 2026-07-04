@@ -65,6 +65,13 @@ export class UsersController {
     return this.users.submitKyc(user.id, dto.documents);
   }
 
+  // Acceptation des conditions d'utilisation (obligatoire après l'inscription)
+  @Post('me/accept-terms')
+  @UseGuards(AuthGuard)
+  acceptTerms(@CurrentUser() user: any) {
+    return this.users.acceptTerms(user.id);
+  }
+
   @Get(':id/profile')
   profile(@Param('id') id: string) {
     return this.users.publicProfile(id);

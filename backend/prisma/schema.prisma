@@ -29,6 +29,7 @@ model User {
   payoutName    String?
   payoutAddress String?
   blocked       Boolean  @default(false)
+  acceptedTermsAt DateTime?
   createdAt     DateTime @default(now())
 
   listings      Listing[]
