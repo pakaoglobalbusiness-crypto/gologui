@@ -20,9 +20,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   // Étape 1 : type
   String _type = 'villa';
 
-  // Étape 2 : photos — galerie/appareil photo, uploadées vers l'API
+  // Étape 2 : photos — galerie/appareil photo, uploadées vers l'API.
+  // Minimum 5 (logement) ou 3 (voiture), maximum 7.
   final List<String> _photos = [];
   bool _uploading = false;
+
+  int get _minPhotos => _type == 'villa' ? 5 : 3;
 
   Future<void> _pickPhoto(ImageSource source) async {
     final picked = await ImagePicker().pickImage(
@@ -179,16 +182,50 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
           Text(
+            'Minimum ${_type == 'villa' ? 5 : 3} photos, maximum 7. '
             'Des photos authentiques inspirent confiance et accélèrent '
             'la validation de votre annonce.',
             style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+          // Compteur de progression
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: _photos.length >= _minPhotos
+                  ? const Color(0xFFEDF5EF)
+                  : const Color(0xFFFFF9D6),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _photos.length >= _minPhotos
+                      ? Icons.check_circle
+                      : Icons.info_outline,
+                  size: 18,
+                  color: _photos.length >= _minPhotos
+                      ? gologuiTeal
+                      : const Color(0xFF8A6D00),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _photos.length >= _minPhotos
+                      ? '${_photos.length}/7 photos — c’est bon ✓'
+                      : '${_photos.length}/$_minPhotos photos minimum',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _uploading ? null : () => _pickPhoto(ImageSource.camera),
+                  onPressed: _uploading || _photos.length >= 7
+                      ? null
+                      : () => _pickPhoto(ImageSource.camera),
                   icon: const Icon(Icons.photo_camera),
                   label: const Text('Appareil photo'),
                 ),
@@ -196,13 +233,23 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _uploading ? null : () => _pickPhoto(ImageSource.gallery),
+                  onPressed: _uploading || _photos.length >= 7
+                      ? null
+                      : () => _pickPhoto(ImageSource.gallery),
                   icon: const Icon(Icons.photo_library),
                   label: const Text('Galerie'),
                 ),
               ),
             ],
           ),
+          if (_photos.length >= 7)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                'Maximum de 7 photos atteint — supprimez-en une pour en changer.',
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 12.5),
+              ),
+            ),
           if (_uploading)
             const Padding(
               padding: EdgeInsets.only(top: 14),
@@ -479,6 +526,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     ];
 
     final canNext = switch (_step) {
+      1 => _photos.length >= _minPhotos && _photos.length <= 7,
       2 => _titleCtrl.text.isNotEmpty && _descCtrl.text.isNotEmpty,
       3 => (int.tryParse(_priceCtrl.text) ?? 0) >= 1000,
       _ => true,

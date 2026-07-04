@@ -19,6 +19,19 @@ export class ListingsService {
       throw new BadRequestException('carDetails requis pour une voiture');
     }
 
+    // Photos réelles obligatoires : 5 min pour un logement, 3 min pour
+    // une voiture, 7 max (confiance + poids des annonces).
+    const minPhotos = dto.type === 'villa' ? 5 : 3;
+    const photoCount = dto.photoUrls?.length ?? 0;
+    if (photoCount < minPhotos) {
+      throw new BadRequestException(
+        `Ajoutez au moins ${minPhotos} photos pour ${dto.type === 'villa' ? 'un logement' : 'une voiture'} (${photoCount}/${minPhotos})`,
+      );
+    }
+    if (photoCount > 7) {
+      throw new BadRequestException('Maximum 7 photos par annonce');
+    }
+
     const owner = await this.prisma.user.findUniqueOrThrow({ where: { id: ownerId } });
     if (owner.kycStatus !== 'verified') {
       throw new ForbiddenException(
