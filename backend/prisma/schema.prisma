@@ -250,3 +250,10 @@ model Favorite {
 
   @@id([userId, listingId])
 }
+
+model UploadedFile {
+  id        String   @id @default(cuid())
+  mimeType  String
+  data      Bytes
+  createdAt DateTime @default(now())
+}
