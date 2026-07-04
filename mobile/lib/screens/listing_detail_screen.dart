@@ -128,19 +128,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
       body: ListView(
         children: [
           if (photos.isNotEmpty)
-            SizedBox(
-              height: 230,
-              child: PageView(
-                children: [
-                  for (final p in photos)
-                    Image.network(
-                      p['url'],
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          Container(color: Colors.grey.shade300),
-                    ),
-                ],
-              ),
+            _PhotoCarousel(
+              urls: [for (final p in photos) p['url'] as String],
             ),
           Padding(
             padding: const EdgeInsets.all(16),
@@ -328,6 +317,152 @@ class _Chip extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(fontSize: 13, color: scheme.onSurface),
+      ),
+    );
+  }
+}
+
+/// Carrousel de photos avec indicateurs : compteur (1/4), points en bas,
+/// et flèches gauche/droite pour signaler qu'on peut changer d'image.
+class _PhotoCarousel extends StatefulWidget {
+  final List<String> urls;
+  const _PhotoCarousel({required this.urls});
+
+  @override
+  State<_PhotoCarousel> createState() => _PhotoCarouselState();
+}
+
+class _PhotoCarouselState extends State<_PhotoCarousel> {
+  final _controller = PageController();
+  int _index = 0;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _go(int i) {
+    if (i < 0 || i >= widget.urls.length) return;
+    _controller.animateToPage(
+      i,
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOut,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final n = widget.urls.length;
+    return SizedBox(
+      height: 240,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          PageView.builder(
+            controller: _controller,
+            itemCount: n,
+            onPageChanged: (i) => setState(() => _index = i),
+            itemBuilder: (_, i) => Image.network(
+              widget.urls[i],
+              fit: BoxFit.cover,
+              width: double.infinity,
+              errorBuilder: (_, __, ___) => Container(color: Colors.grey.shade300),
+            ),
+          ),
+          if (n > 1) ...[
+            // Compteur en haut à droite (ex. « 2/5 »)
+            Positioned(
+              top: 12,
+              right: 12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.55),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.photo_library_outlined,
+                        color: Colors.white, size: 15),
+                    const SizedBox(width: 5),
+                    Text(
+                      '${_index + 1}/$n',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Flèche gauche (masquée sur la première image)
+            if (_index > 0)
+              Positioned(
+                left: 8,
+                child: _NavArrow(
+                  icon: Icons.chevron_left,
+                  onTap: () => _go(_index - 1),
+                ),
+              ),
+            // Flèche droite (masquée sur la dernière image)
+            if (_index < n - 1)
+              Positioned(
+                right: 8,
+                child: _NavArrow(
+                  icon: Icons.chevron_right,
+                  onTap: () => _go(_index + 1),
+                ),
+              ),
+            // Points indicateurs en bas
+            Positioned(
+              bottom: 12,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var i = 0; i < n; i++)
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: i == _index ? 22 : 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: i == _index
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _NavArrow extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _NavArrow({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black.withValues(alpha: 0.4),
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: Icon(icon, color: Colors.white, size: 26),
+        ),
       ),
     );
   }
