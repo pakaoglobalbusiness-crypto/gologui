@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../api.dart';
 import '../favorites.dart';
 import '../main.dart';
+import '../widgets/verified_badge.dart';
 import 'payment_screen.dart';
 
 /// Fiche annonce (F3) + demande de réservation avec dates (F4).
@@ -228,13 +229,18 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          owner['name'] ?? 'Propriétaire',
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        Row(
+                          children: [
+                            Text(
+                              owner['name'] ?? 'Propriétaire',
+                              style: const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            VerifiedBadge(kycStatus: owner['kycStatus']),
+                          ],
                         ),
                         if (owner['kycStatus'] == 'verified')
                           const Text(
-                            '✓ Identité vérifiée',
+                            'Identité vérifiée',
                             style: TextStyle(color: gologuiTeal, fontSize: 12),
                           ),
                       ],

@@ -7,6 +7,7 @@ import '../main.dart';
 import 'create_listing_screen.dart';
 import 'favorites_screen.dart';
 import 'kyc_screen.dart';
+import '../widgets/verified_badge.dart';
 import 'login_screen.dart';
 import 'my_listings_screen.dart';
 import 'owner_bookings_screen.dart';
@@ -162,10 +163,17 @@ class _ProfileTabState extends State<ProfileTab> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              me['name'] ?? 'Compléter mon profil',
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.w700),
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    me['name'] ?? 'Compléter mon profil',
+                                    style: const TextStyle(
+                                        fontSize: 18, fontWeight: FontWeight.w700),
+                                  ),
+                                ),
+                                VerifiedBadge(kycStatus: me['kycStatus'], size: 20),
+                              ],
                             ),
                             Text(me['phone'],
                                 style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
