@@ -73,6 +73,8 @@ model Listing {
   description        String
   city               String
   district           String?
+  department         String?
+  commune            String?
   lat                Float?
   lng                Float?
   pricePerDayFcfa    Int

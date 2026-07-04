@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'api.dart';
+import 'senegal_data.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 
@@ -15,6 +16,7 @@ const gologuiCream = Color(0xFFF7ECD4);
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('fr');
+  await Senegal.load();
   await Api.init();
   runApp(const GologuiApp());
 }

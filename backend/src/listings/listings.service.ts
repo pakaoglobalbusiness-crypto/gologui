@@ -46,6 +46,8 @@ export class ListingsService {
         title: dto.title,
         description: dto.description,
         city: dto.city,
+        department: dto.department,
+        commune: dto.commune,
         district: dto.district,
         lat: dto.lat,
         lng: dto.lng,

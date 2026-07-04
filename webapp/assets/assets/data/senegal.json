@@ -1,0 +1,548 @@
+{
+"Dakar": {
+"Dakar": [
+"Biscuiterie",
+"Cambérène",
+"Dakar",
+"Dakar - Plateau",
+"Dieuppeul – Derklé",
+"Fann - Point E - Amitié",
+"Gorée",
+"Grand Dakar",
+"Grand Yoff",
+"Gueule Tapée – Fass-colobane",
+"H.l.m",
+"Hann - Bel Air",
+"Mermoz – Sacré Cœur",
+"Ngor",
+"Ouakam",
+"Parcelles Assainies",
+"Patte D’oie",
+"Sicap - Liberté",
+"Yoff"
+],
+"Guediawaye": [
+"Dalifort",
+"Diamagueune Sicap Mbao",
+"Djidah Thiaroye Kao",
+"Golf Sud",
+"Guinaw Rail Nord",
+"Guinaw Rail Sud",
+"Guédiawaye",
+"Keur Massar",
+"Malika",
+"Mbao",
+"Médina Gounass",
+"Ndiarème Limamoulaye",
+"Pikine",
+"Pikine Est",
+"Pikine Nord",
+"Pikine Ouest",
+"Sam Notaire",
+"Thiaroye Gare",
+"Thiaroye Sur Mer",
+"Tivaouane – Diack Sao",
+"Wakhinane Nimzath",
+"Yeumbeul Nord",
+"Yeumbeul Sud"
+],
+"Rufisque": [
+"Bargny Rufisque Nord",
+"Diamniadio Rufisque Ouest",
+"Rufisque",
+"Rufisque Est",
+"Sangalkam Yenne",
+"Sébikotane"
+]
+},
+"Diourbel": {
+"Bambey": [
+"Baba Garage",
+"Bambey",
+"Dinguiraye",
+"Gawane",
+"Keur Samba Kane",
+"Lambaye",
+"Ndangalma",
+"Ndondol",
+"Ngogom",
+"Réfane",
+"Thiakhar"
+],
+"Diourbel": [
+"Diourbel",
+"Gade Escale",
+"Keur Ngalgou",
+"Ndankh Séne",
+"Ndindy",
+"Ndoulo",
+"Ngohe",
+"Pattar",
+"Taïba Moutoupha",
+"Tocky Gare",
+"Touré Mbondé"
+],
+"Mbacke": [
+"Dalla Ngabou",
+"Dendèye Gouy Gui",
+"Kael Touba Mboul",
+"Madina",
+"Mbacké",
+"Missirah",
+"Ndioumane Taïba Thièkène",
+"Nghaye",
+"Sadio",
+"Taïf",
+"Touba Fall",
+"Touba Mosquée"
+]
+},
+"Fatick": {
+"Fatick Dioffior": [
+"Diakhao",
+"Diaoulé",
+"Diarrère",
+"Diouroup",
+"Djilasse",
+"Fatick",
+"Fimela",
+"Keur Saloum Diané",
+"Keur Samba Guèye",
+"Loul Sessène",
+"Mbéllacadiao",
+"Ndiop",
+"Ngayokhème",
+"Niakhar",
+"Nioro Alassane Talla",
+"Palmarin Facao",
+"Patar",
+"Tattaguine",
+"Tobacouta"
+],
+"Foundiougne": [
+"Bassoul",
+"Colobane",
+"Dionewar",
+"Diossong",
+"Djilor",
+"Djirnda",
+"Foundiougne Passy",
+"Mbar",
+"Sokone Soum Karang Post"
+],
+"Gossas": [
+"Gossas",
+"Ndiene Lagan",
+"Ouadiour",
+"Patar Lia"
+]
+},
+"Kaffrine": {
+"Kaffrine": [
+"Boulel",
+"Diamagadio",
+"Diokoul Belbouck",
+"Gniby",
+"Kaffrine Nganda",
+"Kahi",
+"Kathiotte",
+"Médinatoul Salam 2"
+],
+"Keur Mboucki": [
+"Birkelane",
+"Keur Mboucki",
+"Mabo",
+"Ndiognick",
+"Touba Mbella"
+],
+"Koungheul": [
+"Fass Thièkène",
+"Ida Mouride",
+"Koungheul",
+"Lour Escale",
+"Maka Yop",
+"Missirah Wadène",
+"Ngainthe Pathé",
+"Ribot Escale",
+"Saly Escale"
+],
+"Malem Hoddar": [
+"Darou Miname 2",
+"Dianké Souf",
+"Khelcom",
+"Malem Hoddar",
+"Ndioum Ngainth",
+"Sagna"
+]
+},
+"Kaolack": {
+"Kaolack": [
+"Dya",
+"Kaolack Kahone Ndoffane Gandiaye",
+"Keur Baka",
+"Keur Socé",
+"Latmingué",
+"Ndiaffate",
+"Ndiedieng",
+"Ndiébel",
+"Thiaré",
+"Thiomby"
+],
+"Mbadakhoune": [
+"Gagnick",
+"Guinguinéo",
+"Khelcom - Birane",
+"Mbadakhoune",
+"Mboss",
+"Ndiago",
+"Ngathie Naoudé",
+"Ourour"
+],
+"Nioro": [
+"Gainthe Kaye",
+"Kayemor",
+"Keur Maba Diakhou",
+"Keur Madongo",
+"Médina Sabakh",
+"Ndramé Escale",
+"Ngayene",
+"Nioro Keur Madiabel",
+"Paos Koto",
+"Porokhane",
+"Taïba Niassène",
+"Wack Ngouna"
+]
+},
+"Kedougou": {
+"Kedougou": [
+"Bandafassi",
+"Dimboli",
+"Dindefelo Ninéfécha",
+"Fongolimbi",
+"Kédougou",
+"Tomboroncoto"
+],
+"Salemata": [
+"Dakatéli",
+"Dar Salam",
+"Ethiolo",
+"Oubadj",
+"Salémata",
+"Thiankoye"
+],
+"Saraya": [
+"Bembou",
+"Khossanto",
+"Missirah Sirimana",
+"Médina Baffé",
+"Sabodala",
+"Saraya"
+]
+},
+"Kolda": {
+"Kolda": [
+"Dialambéré Médina Chérif Bagadadji Mampatim Coumbacara",
+"Dioulacolon",
+"Guiro Yéro Bocar",
+"Kolda Dabo Salikégné Saré Yobadiéga",
+"Médina El Hadj",
+"Saré Bidji",
+"Tankanto Escale",
+"Thiétty"
+],
+"Medina Yoro Foulah": [
+"Bignarabé",
+"Bourouco",
+"Dinguiraye",
+"Kandia",
+"Kandiaye",
+"Koulinto",
+"Kéréwane",
+"Médina Yoro Foulah Pata",
+"Ndorna",
+"Niaming",
+"Némataba",
+"Saré Coly Sallé"
+],
+"Velingara": [
+"Bonconto",
+"Linkering",
+"Médina Gounass",
+"Ouassadou",
+"Pakour",
+"Paroumba",
+"Sinthiang Koundara",
+"Vélingara Kounkané Diaobé-kabendou"
+]
+},
+"Louga": {
+"Kebemer": [
+"Bandegne Ouolof",
+"Barkedji",
+"Darou Marnane",
+"Darou Mousty",
+"Dealy",
+"Diokoul Diawrigne",
+"Djolof Boulal",
+"Kab Gaye",
+"Kanène Ndiob",
+"Kébémer Guéoul",
+"Loro",
+"Mbacké Cajor",
+"Mbadiane",
+"Ndande",
+"Ndoyene",
+"Ngourane Ouolof",
+"Sagatta Djolof",
+"Sagatta Gueth",
+"Sam Yabal",
+"Thiamène Passe",
+"Thieppe",
+"Thiolom Fall",
+"Touba Mérina"
+],
+"Linguere": [
+"Dodji",
+"Kamb Mbeuleukhé",
+"Labgar",
+"Linguère Dahra",
+"Mboula",
+"Ouarkhokh",
+"Téssékéré Forage"
+],
+"Louga": [
+"Gande",
+"Keur Momar Sarr Nguer Malal",
+"Kéle Gueye",
+"Louga",
+"Léona",
+"Mbédiene",
+"Ndiagne",
+"Ngueune Sarr",
+"Nguidilé",
+"Niomré",
+"Pété Ouarack",
+"Sakal",
+"Syer",
+"Thiamène"
+]
+},
+"Matam": {
+"Kanel": [
+"Kanel Ouaoundé Semmé Dembancané",
+"Ndendory",
+"Wouro Sidy"
+],
+"Matam": [
+"Aouré",
+"Bokiladji",
+"Dabia",
+"Des Agnam",
+"Hamady Hounaré Sinthiou Bamambé-banadji",
+"Matam Ourossogui Thilogne",
+"Orkadiéré",
+"Oréfondé"
+],
+"Ranerou Ferlo": [
+"Bokidiawé",
+"Lougré Thioly",
+"Matam Ourossogui Thilogne",
+"Nabadji Civol",
+"Ogo",
+"Oudalaye",
+"Ranérou",
+"Vélingara"
+]
+},
+"Saint Louis": {
+"Dagana": [
+"Bokhol",
+"Dagana Richard Toll Rosso Diama Gaé",
+"Mbane",
+"Ngnith",
+"Ronkh",
+"Ross-béthio"
+],
+"Podor": [
+"Aéré Lao",
+"Dodel",
+"Fanaye",
+"Gamadji Saré",
+"Guedé Village",
+"Guédé Chantier Démette Galoya Toucouleur",
+"Madina Diathbé",
+"Mbolo Birane",
+"Méry",
+"Ndiayene Peindao",
+"Podor Golléré Ndioum Niandane Mbouma",
+"Pété"
+],
+"Saint Louis": [
+"Fass Ngom",
+"Gandon",
+"Ndiébène Gandiole",
+"Saint Louis Mpal"
+]
+},
+"Sedhiou": {
+"Bounkiling": [
+"Boghal",
+"Bona",
+"Bounkiling Madina Wandifa",
+"Diacounda",
+"Diambati",
+"Diaroumé",
+"Faoune",
+"Inor",
+"Kandion Mangana",
+"Ndiamacouta",
+"Tankon"
+],
+"Goudomp": [
+"Bambaly",
+"Diouboudou",
+"Djibanar",
+"Djiredji",
+"Goudomp Samine Tanaff Diattacounda",
+"Kaour",
+"Karantaba",
+"Kolibantang",
+"Mangaroungou Santo",
+"Niagha",
+"Simbandi Balante",
+"Simbandi Brassou",
+"Yarang Balante"
+],
+"Sedhiou": [
+"Bémet Bidjini",
+"Diende Oudoucar",
+"Diendé",
+"Djibabouya",
+"Koussy",
+"Sakar",
+"San Samba",
+"Sédhiou Diannah Malary Marsassoum"
+]
+},
+"Tambacounda": {
+"Bakel": [
+"Bakel Kidira Diawara",
+"Ballou",
+"Boynguel Bamba",
+"Bélé",
+"Dougué",
+"Gabou",
+"Koussan",
+"Madina Foulbé",
+"Moudery",
+"Sinthiou Fissa",
+"Sinthiou Mamadou Boubou",
+"Toumboura Sadatou"
+],
+"Goudiry": [
+"Bala",
+"Bani Israel",
+"Boutoucoufara",
+"Dianké Makha",
+"Goudiry Kothiary",
+"Goumbayel",
+"Koar",
+"Komoti",
+"Koulor",
+"Sinthiou Bocar Aly"
+],
+"Koupentoum": [
+"Bamba Thialène",
+"Kahène",
+"Koumpentoum",
+"Kouthiaba Wolof",
+"Makacolibantang",
+"Malème Niani",
+"Ndame",
+"Ndoga Babacar",
+"Niani Toucouleur",
+"Payar"
+],
+"Tamba": [
+"Dialacoto Missirah",
+"Koussanar",
+"Néttéboulou",
+"Sinthiou Malème",
+"Tambacounda"
+]
+},
+"Thies": {
+"Mbour": [
+"Fissel",
+"Joal – Fadhiouth Diass Nguekhokh Thiadiaye Saly Portudal Ngaparou Somone Popenguine",
+"Ndiaganiao",
+"Ndiéyène Sirakh",
+"Ngoudiane",
+"Nguéniène",
+"Sandiara",
+"Sessene",
+"Sindia Mbour Malicounda",
+"Thiénaba",
+"Touba Toul"
+],
+"Thies": [
+"Darou Khoudoss",
+"Fandène",
+"Keur Moussa Diender",
+"Méouane",
+"Notto",
+"Tassète",
+"Taïba Ndiaye",
+"Thies Kayar Khombole Pout"
+],
+"Tivaouane": [
+"Chérif Lo",
+"Koul",
+"Mbayène",
+"Mont Rolland",
+"Mérina Dakhar",
+"Ngandiouf",
+"Niakhène",
+"Notto Gouye Diama",
+"Pire Goureye",
+"Pékèsse",
+"Thilmakha",
+"Tivaouane Mboro Mékhé"
+]
+},
+"Ziguinchor": {
+"Bignona": [
+"Balinghore",
+"Bignona Thionck-essyl Diouloulou",
+"Coubalan",
+"Diégoune",
+"Djibidione",
+"Kartiack",
+"Mangagoulack",
+"Mlom",
+"Niamone Tenghori",
+"Oulampane",
+"Ouonck",
+"Sindian",
+"Suelle"
+],
+"Oussouye": [
+"Diembéring",
+"Djinaky",
+"Kafontine",
+"Kataba 1",
+"Mlomp",
+"Oukout",
+"Oussouye",
+"Santhiaba Manjack"
+],
+"Ziguinchor": [
+"Adéane",
+"Boutoupa Camaracounda",
+"Enampore",
+"Niaguis",
+"Niassia",
+"Ziguinchor"
+]
+}
+}

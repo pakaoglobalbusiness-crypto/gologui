@@ -37,7 +37,9 @@ export class CreateListingDto {
   @IsIn(LISTING_TYPES as unknown as string[]) type!: string;
   @IsString() @IsNotEmpty() title!: string;
   @IsString() @IsNotEmpty() description!: string;
-  @IsString() @IsNotEmpty() city!: string;
+  @IsString() @IsNotEmpty() city!: string; // = région (champ recherché)
+  @IsOptional() @IsString() department?: string;
+  @IsOptional() @IsString() commune?: string;
   @IsOptional() @IsString() district?: string;
   @IsOptional() @IsNumber() lat?: number;
   @IsOptional() @IsNumber() lng?: number;
@@ -53,6 +55,8 @@ export class CreateListingDto {
 export class UpdateListingDto {
   @IsOptional() @IsString() title?: string;
   @IsOptional() @IsString() description?: string;
+  @IsOptional() @IsString() department?: string;
+  @IsOptional() @IsString() commune?: string;
   @IsOptional() @IsString() district?: string;
   @IsOptional() @IsInt() @Min(1000) pricePerDayFcfa?: number;
   @IsOptional() @IsInt() @Min(0) depositFcfa?: number;

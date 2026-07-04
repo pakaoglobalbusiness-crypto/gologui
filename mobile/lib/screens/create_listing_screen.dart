@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../api.dart';
+import '../senegal_data.dart';
 import '../main.dart';
 
 /// Création d'annonce guidée en 5 étapes max (F10) :
@@ -33,8 +34,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
     _type = e['type'];
     _titleCtrl.text = e['title'] ?? '';
     _descCtrl.text = e['description'] ?? '';
-    _city = e['city'] ?? 'Dakar';
-    _districtCtrl.text = e['district'] ?? '';
+    _region = e['city']; // city = région
+    _department = e['department'];
+    _commune = e['commune'];
     _priceCtrl.text = '${e['pricePerDayFcfa'] ?? ''}';
     _depositCtrl.text = '${e['depositFcfa'] ?? 0}';
     _policy = e['cancellationPolicy'] ?? 'moderate';
@@ -124,8 +126,10 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   // Étape 3 : description
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
-  String _city = 'Dakar';
-  final _districtCtrl = TextEditingController();
+  // Localisation administrative (Région → Département → Commune)
+  String? _region;
+  String? _department;
+  String? _commune;
   // Villa
   int _bedrooms = 2, _bathrooms = 1, _capacity = 4;
   bool _pool = false, _wifi = true, _ac = true, _guard = false;
@@ -141,7 +145,6 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
   String _policy = 'moderate';
   bool _instant = false;
 
-  static const cities = ['Dakar', 'Saly', 'Mbour', 'Saint-Louis', 'Touba', 'Ziguinchor'];
 
   Future<void> _submit() async {
     setState(() => _submitting = true);
@@ -149,8 +152,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       if (!_isEditing) 'type': _type,
       'title': _titleCtrl.text,
       'description': _descCtrl.text,
-      if (!_isEditing) 'city': _city,
-      if (_districtCtrl.text.isNotEmpty) 'district': _districtCtrl.text,
+      'city': _region, // city = région (champ recherché)
+      'department': _department,
+      'commune': _commune,
       'pricePerDayFcfa': int.tryParse(_priceCtrl.text) ?? 0,
       'depositFcfa': int.tryParse(_depositCtrl.text) ?? 0,
       'cancellationPolicy': _policy,
@@ -397,28 +401,60 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             decoration: const InputDecoration(labelText: 'Description'),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  initialValue: _city,
-                  decoration: const InputDecoration(labelText: 'Ville'),
-                  items: [
-                    for (final c in cities)
-                      DropdownMenuItem(value: c, child: Text(c)),
-                  ],
-                  onChanged: (v) => setState(() => _city = v!),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextField(
-                  controller: _districtCtrl,
-                  onChanged: (_) => setState(() {}),
-                  decoration: const InputDecoration(labelText: 'Quartier'),
-                ),
-              ),
+          // Localisation : Région → Département → Commune (en cascade)
+          DropdownButtonFormField<String>(
+            initialValue: Senegal.regions.contains(_region) ? _region : null,
+            isExpanded: true,
+            decoration: const InputDecoration(labelText: 'Région'),
+            items: [
+              for (final r in Senegal.regions)
+                DropdownMenuItem(value: r, child: Text(r)),
             ],
+            onChanged: (v) => setState(() {
+              _region = v;
+              _department = null;
+              _commune = null;
+            }),
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            initialValue: Senegal.departments(_region).contains(_department)
+                ? _department
+                : null,
+            isExpanded: true,
+            decoration: InputDecoration(
+              labelText: 'Département',
+              enabled: _region != null,
+            ),
+            items: [
+              for (final d in Senegal.departments(_region))
+                DropdownMenuItem(value: d, child: Text(d)),
+            ],
+            onChanged: _region == null
+                ? null
+                : (v) => setState(() {
+                      _department = v;
+                      _commune = null;
+                    }),
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            initialValue:
+                Senegal.communes(_region, _department).contains(_commune)
+                    ? _commune
+                    : null,
+            isExpanded: true,
+            decoration: InputDecoration(
+              labelText: 'Commune',
+              enabled: _department != null,
+            ),
+            items: [
+              for (final c in Senegal.communes(_region, _department))
+                DropdownMenuItem(value: c, child: Text(c)),
+            ],
+            onChanged: _department == null
+                ? null
+                : (v) => setState(() => _commune = v),
           ),
           const SizedBox(height: 16),
           if (_type == 'villa') ...[
@@ -592,7 +628,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                     style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                   ),
                   const SizedBox(height: 6),
-                  Text('$_city${_districtCtrl.text.isNotEmpty ? ' · ${_districtCtrl.text}' : ''}'),
+                  Text([_commune, _department, _region]
+                      .where((e) => e != null)
+                      .join(', ')),
                   Text('${_photos.length} photo(s)'),
                   Text(
                     '${fcfa(int.tryParse(_priceCtrl.text) ?? 0)} / jour',
@@ -619,7 +657,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
       1 => _photos.length >= _minPhotos && _photos.length <= 7,
       2 => _titleCtrl.text.trim().isNotEmpty &&
           _descCtrl.text.trim().isNotEmpty &&
-          _districtCtrl.text.trim().isNotEmpty &&
+          _region != null &&
+          _department != null &&
+          _commune != null &&
           (_type == 'villa' ||
               (_brandCtrl.text.trim().isNotEmpty &&
                   (int.tryParse(_yearCtrl.text) ?? 0) >= 1990)),

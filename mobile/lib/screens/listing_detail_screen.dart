@@ -155,10 +155,15 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                 Row(
                   children: [
                     const Icon(Icons.place, size: 16, color: gologuiTeal),
-                    Text(
-                      ' ${l['city']}${l['district'] != null ? ' · ${l['district']}' : ''}',
+                    Expanded(
+                      child: Text(
+                        ' ${[
+                          l['commune'],
+                          l['department'],
+                          l['city'],
+                        ].where((e) => e != null && '$e'.isNotEmpty).join(', ')}',
+                      ),
                     ),
-                    const Spacer(),
                     if ((l['avgRating'] as num) > 0) ...[
                       const Icon(Icons.star, size: 16, color: Colors.amber),
                       Text(' ${l['avgRating']} (${l['ratingCount']} avis)'),

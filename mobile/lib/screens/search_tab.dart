@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../api.dart';
+import '../senegal_data.dart';
 import '../favorites.dart';
 import '../widgets/listing_card.dart';
 import 'listing_detail_screen.dart';
@@ -22,7 +23,6 @@ class _SearchTabState extends State<SearchTab> {
   bool _loading = true;
   String? _error;
 
-  static const cities = ['Dakar', 'Saly', 'Mbour', 'Saint-Louis', 'Touba', 'Ziguinchor'];
 
   @override
   void initState() {
@@ -165,7 +165,7 @@ class _SearchTabState extends State<SearchTab> {
                                 _search();
                               },
                             ),
-                            for (final c in cities)
+                            for (final c in Senegal.regions)
                               _FilterChip(
                                 label: c,
                                 selected: _city == c,
