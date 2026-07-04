@@ -27,17 +27,45 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
 
   int get _minPhotos => _type == 'villa' ? 5 : 3;
 
-  Future<void> _pickPhoto(ImageSource source) async {
+  // Photo unique (appareil photo)
+  Future<void> _takePhoto() async {
     final picked = await ImagePicker().pickImage(
-      source: source,
+      source: ImageSource.camera,
       maxWidth: 1600,
       imageQuality: 82, // compression (connexions 3G, spec §3)
     );
     if (picked == null) return;
+    await _uploadAll([picked]);
+  }
+
+  // Sélection MULTIPLE depuis la galerie (sans ressortir à chaque photo)
+  Future<void> _pickFromGallery() async {
+    final picked = await ImagePicker().pickMultiImage(
+      maxWidth: 1600,
+      imageQuality: 82,
+    );
+    if (picked.isEmpty) return;
+    final remaining = 7 - _photos.length;
+    if (picked.length > remaining) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+            'Vous pouvez ajouter $remaining photo(s) de plus (7 max). '
+            'Les premières sont conservées.',
+          ),
+        ));
+      }
+    }
+    await _uploadAll(picked.take(remaining).toList());
+  }
+
+  Future<void> _uploadAll(List<XFile> files) async {
     setState(() => _uploading = true);
     try {
-      final url = await Api.uploadBytes(await picked.readAsBytes(), picked.name);
-      setState(() => _photos.add(url));
+      for (final f in files) {
+        final url = await Api.uploadBytes(await f.readAsBytes(), f.name);
+        if (mounted) setState(() => _photos.add(url));
+      }
     } on ApiException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
@@ -234,7 +262,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 child: OutlinedButton.icon(
                   onPressed: _uploading || _photos.length >= 7
                       ? null
-                      : () => _pickPhoto(ImageSource.camera),
+                      : _takePhoto,
                   icon: const Icon(Icons.photo_camera),
                   label: const Text('Appareil photo'),
                 ),
@@ -244,9 +272,9 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                 child: OutlinedButton.icon(
                   onPressed: _uploading || _photos.length >= 7
                       ? null
-                      : () => _pickPhoto(ImageSource.gallery),
+                      : _pickFromGallery,
                   icon: const Icon(Icons.photo_library),
-                  label: const Text('Galerie'),
+                  label: const Text('Galerie (plusieurs)'),
                 ),
               ),
             ],
