@@ -16,7 +16,14 @@ export class UsersService {
 
   async updateProfile(
     userId: string,
-    data: { name?: string; photoUrl?: string; payoutMethod?: string; payoutAccount?: string },
+    data: {
+      name?: string;
+      photoUrl?: string;
+      payoutMethod?: string;
+      payoutAccount?: string;
+      payoutName?: string;
+      payoutAddress?: string;
+    },
   ) {
     return this.prisma.user.update({ where: { id: userId }, data });
   }

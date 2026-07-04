@@ -26,6 +26,8 @@ model User {
   ratingCount   Int      @default(0)
   payoutMethod  String? // wave | orange_money | free_money | bank
   payoutAccount String?
+  payoutName    String?
+  payoutAddress String?
   blocked       Boolean  @default(false)
   createdAt     DateTime @default(now())
 

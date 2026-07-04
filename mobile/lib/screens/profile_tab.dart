@@ -11,6 +11,7 @@ import '../widgets/verified_badge.dart';
 import 'login_screen.dart';
 import 'my_listings_screen.dart';
 import 'owner_bookings_screen.dart';
+import 'payment_details_screen.dart';
 import 'revenue_screen.dart';
 
 /// Profil + bascule de rôle propriétaire (tout dans la même app, spec §2.3) :
@@ -200,6 +201,27 @@ class _ProfileTabState extends State<ProfileTab> {
                             builder: (_) => const FavoritesScreen(),
                           ))
                           .then((_) => setState(() {})),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Coordonnées de paiement (locataires + propriétaires)
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.account_balance_wallet_outlined,
+                          color: gologuiTeal),
+                      title: const Text('Coordonnées de paiement'),
+                      subtitle: Text(
+                        me['payoutAccount'] != null &&
+                                '${me['payoutAccount']}'.isNotEmpty
+                            ? '${me['payoutMethod'] == 'bank' ? 'Compte bancaire' : 'Wave'} enregistré ✓'
+                            : 'Pour recevoir vos remboursements et gains',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.of(context)
+                          .push(MaterialPageRoute(
+                            builder: (_) => const PaymentDetailsScreen(),
+                          ))
+                          .then((_) => _load()),
                     ),
                   ),
                   const SizedBox(height: 12),

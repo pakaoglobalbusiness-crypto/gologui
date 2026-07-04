@@ -14,8 +14,11 @@ import { UsersService } from './users.service';
 class UpdateProfileDto {
   @IsOptional() @IsString() name?: string;
   @IsOptional() @IsString() photoUrl?: string;
+  // Coordonnées de paiement (remboursements locataires / gains propriétaires)
   @IsOptional() @IsIn(['wave', 'orange_money', 'free_money', 'bank']) payoutMethod?: string;
-  @IsOptional() @IsString() payoutAccount?: string;
+  @IsOptional() @IsString() payoutAccount?: string; // numéro Wave OU IBAN
+  @IsOptional() @IsString() payoutName?: string; // nom complet / titulaire
+  @IsOptional() @IsString() payoutAddress?: string; // adresse (option Wave)
 }
 
 class KycDocDto {
