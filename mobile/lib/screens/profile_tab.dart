@@ -166,7 +166,7 @@ class _ProfileTabState extends State<ProfileTab> {
                                   fontSize: 18, fontWeight: FontWeight.w700),
                             ),
                             Text(me['phone'],
-                                style: TextStyle(color: Colors.grey.shade600)),
+                                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
                           ],
                         ),
                       ),

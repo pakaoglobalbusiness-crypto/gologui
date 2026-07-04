@@ -115,7 +115,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         children: [
                           Text(
                             'Total à payer',
-                            style: TextStyle(color: Colors.grey.shade600),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           ),
                           Text(
                             fcfa(total),
@@ -131,7 +131,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             'après le début de la location.',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey.shade600,
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                         ],

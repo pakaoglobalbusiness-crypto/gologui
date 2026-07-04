@@ -185,7 +185,7 @@ class _BookingsTabState extends State<BookingsTab> {
                               const SizedBox(height: 6),
                               Text(
                                 '${dateFr(b['startDate'])} → ${dateFr(b['endDate'])}',
-                                style: TextStyle(color: Colors.grey.shade600),
+                                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                               ),
                               Text(
                                 fcfa(b['totalPriceFcfa']),

@@ -136,7 +136,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   color: const Color(0xFFFFF9D6),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: Text('Mode démo — votre code : $_devCode'),
+                                child: Text(
+                                  'Mode démo — votre code : $_devCode',
+                                  style: const TextStyle(color: Color(0xFF5C4B00)),
+                                ),
                               ),
                             TextField(
                               controller: _codeCtrl,

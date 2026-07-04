@@ -168,7 +168,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                 const SizedBox(height: 4),
                 Text(
                   'Adresse exacte communiquée après paiement',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                 ),
                 const Divider(height: 28),
                 // Équipements / caractéristiques
@@ -208,8 +208,11 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                       color: const Color(0xFFFFF9D6),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Text('Caution : ${fcfa(l['depositFcfa'])} '
-                        '(remboursée sous 48 h après le retour sans litige)'),
+                    child: Text(
+                      'Caution : ${fcfa(l['depositFcfa'])} '
+                      '(remboursée sous 48 h après le retour sans litige)',
+                      style: const TextStyle(color: Color(0xFF5C4B00)),
+                    ),
                   ),
                 ],
                 const Divider(height: 28),
@@ -306,13 +309,17 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
-        color: const Color(0xFFEDF5EF),
+        color: scheme.primary.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(label, style: const TextStyle(fontSize: 13)),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 13, color: scheme.onSurface),
+      ),
     );
   }
 }

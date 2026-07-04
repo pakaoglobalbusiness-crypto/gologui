@@ -157,11 +157,15 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             ('voiture', '🚗', 'Une voiture', 'Avec ou sans chauffeur'),
           ])
             Card(
-              color: _type == value ? const Color(0xFFEDF5EF) : null,
+              color: _type == value
+                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.12)
+                  : null,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
                 side: BorderSide(
-                  color: _type == value ? gologuiTeal : Colors.grey.shade300,
+                  color: _type == value
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.outlineVariant,
                   width: _type == value ? 2 : 1,
                 ),
               ),
@@ -185,7 +189,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
             'Minimum ${_type == 'villa' ? 5 : 3} photos, maximum 7. '
             'Des photos authentiques inspirent confiance et accélèrent '
             'la validation de votre annonce.',
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13),
           ),
           const SizedBox(height: 12),
           // Compteur de progression
@@ -213,7 +217,12 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
                   _photos.length >= _minPhotos
                       ? '${_photos.length}/7 photos — c’est bon ✓'
                       : '${_photos.length}/$_minPhotos photos minimum',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: _photos.length >= _minPhotos
+                        ? const Color(0xFF0B4F47)
+                        : const Color(0xFF5C4B00),
+                  ),
                 ),
               ],
             ),
@@ -247,7 +256,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 'Maximum de 7 photos atteint — supprimez-en une pour en changer.',
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 12.5),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12.5),
               ),
             ),
           if (_uploading)
@@ -481,6 +490,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
               child: Text(
                 'Vous recevrez ${fcfa((int.parse(_priceCtrl.text) * 0.9).round())} '
                 'par jour loué (commission Gologui : 10 %).',
+                style: const TextStyle(color: Color(0xFF0B4F47)),
               ),
             ),
           ],
@@ -519,7 +529,7 @@ class _CreateListingScreenState extends State<CreateListingScreen> {
           Text(
             'Votre annonce sera vérifiée par notre équipe avant publication '
             '(sous 24 h en général).',
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13),
           ),
         ],
       ),
