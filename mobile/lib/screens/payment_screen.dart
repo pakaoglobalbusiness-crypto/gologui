@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../api.dart';
 import '../main.dart';
+import '../widgets/payment_icon.dart';
 
 /// Paiement in-app (F5) : Wave, Orange Money, Free Money, carte.
 /// En dev, l'agrégateur est simulé et confirme automatiquement après ~2 s ;
@@ -144,15 +145,32 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                   ),
                   const SizedBox(height: 8),
-                  for (final (value, label, emoji) in methods)
-                    RadioListTile<String>(
-                      value: value,
-                      groupValue: _method,
-                      onChanged: _state == 'paying'
-                          ? null
-                          : (v) => setState(() => _method = v!),
-                      title: Text('$emoji  $label'),
-                      activeColor: gologuiTeal,
+                  for (final (value, label, _) in methods)
+                    Card(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(
+                          color: _method == value
+                              ? gologuiTeal
+                              : Theme.of(context).colorScheme.outlineVariant,
+                          width: _method == value ? 2 : 1,
+                        ),
+                      ),
+                      child: ListTile(
+                        onTap: _state == 'paying'
+                            ? null
+                            : () => setState(() => _method = value),
+                        leading: PaymentIcon(method: value),
+                        title: Text(label,
+                            style: const TextStyle(fontWeight: FontWeight.w600)),
+                        trailing: Icon(
+                          _method == value
+                              ? Icons.radio_button_checked
+                              : Icons.radio_button_unchecked,
+                          color: _method == value ? gologuiTeal : null,
+                        ),
+                      ),
                     ),
                   if (_error != null)
                     Padding(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../api.dart';
 import '../favorites.dart';
 import '../widgets/listing_card.dart';
+import '../widgets/animated_logo.dart';
 import 'filter_sheet.dart';
 import 'listing_detail_screen.dart';
 
@@ -103,9 +104,19 @@ class _SearchTabState extends State<SearchTab> {
                               ],
                             ),
                           ),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.asset('assets/icon/icon.png', height: 42),
+                          // Logo animé (bouge toutes les 5 s) = réinitialiser
+                          Tooltip(
+                            message: 'Réinitialiser',
+                            child: AnimatedLogo(
+                              size: 44,
+                              onTap: () {
+                                setState(() {
+                                  _filters = Filters();
+                                  _type = 'villa';
+                                });
+                                _search();
+                              },
+                            ),
                           ),
                         ],
                       ),

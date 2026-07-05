@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../api.dart';
 import '../main.dart';
+import '../widgets/payment_icon.dart';
 
 /// Mes revenus / Portefeuille : solde en FCFA, transfert du solde vers
 /// Wave / Orange Money / virement bancaire, et historique.
@@ -296,10 +297,10 @@ class _TransferSheetState extends State<_TransferSheet> {
           // Destinations
           Row(
             children: [
-              for (final (v, emoji, label) in [
-                ('wave', '🌊', 'Wave'),
-                ('orange_money', '🟠', 'Orange Money'),
-                ('bank', '🏦', 'Banque'),
+              for (final (v, label) in [
+                ('wave', 'Wave'),
+                ('orange_money', 'Orange Money'),
+                ('bank', 'Banque'),
               ])
                 Expanded(
                   child: Padding(
@@ -322,7 +323,7 @@ class _TransferSheetState extends State<_TransferSheet> {
                         ),
                         child: Column(
                           children: [
-                            Text(emoji, style: const TextStyle(fontSize: 22)),
+                            PaymentIcon(method: v, size: 32),
                             const SizedBox(height: 4),
                             Text(label,
                                 textAlign: TextAlign.center,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../api.dart';
@@ -69,16 +70,36 @@ class _ProfileTabState extends State<ProfileTab> {
     }
   }
 
-  // Photo de profil : galerie/caméra → upload → PATCH /users/me
+  // Photo de profil : galerie → recadrage (rognage) → upload → PATCH /users/me
   Future<void> _changePhoto() async {
     final picked = await ImagePicker().pickImage(
       source: ImageSource.gallery,
-      maxWidth: 800,
-      imageQuality: 85,
+      maxWidth: 1200,
+      imageQuality: 90,
     );
     if (picked == null) return;
+    // Recadrage carré
+    final cropped = await ImageCropper().cropImage(
+      sourcePath: picked.path,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Recadrer la photo',
+          toolbarColor: gologuiTeal,
+          toolbarWidgetColor: Colors.white,
+          lockAspectRatio: true,
+          hideBottomControls: false,
+        ),
+        IOSUiSettings(title: 'Recadrer la photo', aspectRatioLockEnabled: true),
+        WebUiSettings(context: context),
+      ],
+    );
+    final bytes = cropped != null
+        ? await cropped.readAsBytes()
+        : await picked.readAsBytes();
+    final name = cropped?.path.split('/').last ?? picked.name;
     try {
-      final url = await Api.uploadBytes(await picked.readAsBytes(), picked.name);
+      final url = await Api.uploadBytes(bytes, name);
       await Api.patch('/users/me', body: {'photoUrl': url});
       final me = await Api.get('/users/me');
       Api.currentUser = me;
