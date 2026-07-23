@@ -88,7 +88,10 @@ class _LoginScreenState extends State<LoginScreen> {
       await Api.setSession(res['token'], res['user']);
       if (!mounted) return;
       final u = res['user'] ?? {};
-      final hasName = (u['firstName'] as String?)?.isNotEmpty ?? false;
+      // Un compte est « complet » s'il a un prénom OU un nom (comptes existants
+      // d'avant l'ajout du champ prénom/nom).
+      final hasName =
+          ((u['firstName'] ?? u['name'] ?? '') as String).trim().isNotEmpty;
       final accepted = u['acceptedTermsAt'] != null;
       // 1) profil (prénom/nom) obligatoire, 2) conditions, 3) app
       final next = !hasName

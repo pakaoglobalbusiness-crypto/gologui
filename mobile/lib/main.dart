@@ -126,7 +126,10 @@ class GologuiApp extends StatelessWidget {
       themeMode: ThemeMode.system, // s'adapte au réglage du téléphone
       home: !Api.isLoggedIn
           ? const LoginScreen()
-          : (((Api.currentUser?['firstName'] as String?)?.isNotEmpty ?? false)
+          : (((Api.currentUser?['firstName'] ?? Api.currentUser?['name'] ?? '')
+                      as String)
+                  .trim()
+                  .isNotEmpty
               ? (Api.currentUser?['acceptedTermsAt'] != null
                   ? const HomeScreen()
                   : const TermsScreen())
